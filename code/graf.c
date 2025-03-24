@@ -121,27 +121,36 @@ long sumaWeighted(weightedNode* node, long index){
 }
 
 // zwraca index z listy conection w wybranego punktu
-weightedNode* choseNodeToMerge(weightedNode* baseNode, long n){
+weightedNode* choseNodeToMerge(weightedNode* baseNode, long n, long max){
     long chosenNodeIndex = 0;
     long sumChosenNode = sumaWeighted(baseNode, 0);
+    int isInRange = (baseNode->nId + baseNode->conetion[0]->nId) <= max;
     long newSum = 0;
+    long newIsInRange = 0;
     for(long i=1; i<baseNode->nCon; i++){
+        newIsInRange = (baseNode->nId + baseNode->conetion[i]->nId) <= max;
+        newSum = sumaWeighted(baseNode, i);
+        if(newIsInRange < isInRange){
+            continue;
+        }
+        if(newIsInRange > isInRange){
+            goto changeNodeToMerge;
+        }
         if(baseNode->weighted[chosenNodeIndex] > baseNode->weighted[i]){
             continue;
         }
-        newSum = sumaWeighted(baseNode, i);
-        // printf("%ld - %ld\n", graf[nodeIndex]->weighted[i], newSum);
-        // printf("%ld\n", newSum);
         if(baseNode->weighted[chosenNodeIndex] < baseNode->weighted[i]){
-            chosenNodeIndex = i;
-            sumChosenNode = newSum;
-            continue;
+            goto changeNodeToMerge;
         }
         if(sumChosenNode > newSum){
-            chosenNodeIndex = i;
-            sumChosenNode = newSum;
-            continue;
+            goto changeNodeToMerge;
         }
+
+        continue;
+        changeNodeToMerge:
+        chosenNodeIndex = i;
+        sumChosenNode = newSum;
+        isInRange = newIsInRange;
     }
     return baseNode->conetion[chosenNodeIndex];
 }
@@ -154,14 +163,14 @@ void removeConection(weightedNode* node, long indexToRemodw){
     node->nCon--;
 }
 
-void mergeWithGraf(weightedNode** graf, long n, long nodeIndex){
+void mergeWithGraf(weightedNode** graf, long n, long nodeIndex, long maxSize){
     long i;
     weightedNode* deletNode = graf[nodeIndex];
 
     if(deletNode->nCon == 0){
         fprintf(stderr, "[!] node nie ma połączeń\n");
     }
-    weightedNode* mergeWith = choseNodeToMerge(deletNode, n);
+    weightedNode* mergeWith = choseNodeToMerge(deletNode, n, maxSize);
 
     //tymczasiwe do testow
     // deletNode = graf[1];
@@ -341,7 +350,7 @@ long cutGraf(node** graf, long n, int margin, node*** out){
     long newCut;
     while (nWeightedGraf > 2){
         long farderNode = minimumCutPhase(weightedGraf, nWeightedGraf);
-        // printf("chosen: %ld\n", weightedGraf[farderNode]->ids[0]);
+        printf("chosen: %ld\n", weightedGraf[farderNode]->ids[0]);
         
         // printf("size: %ld\n", weightedGraf[farderNode]->nId);
         if(weightedGraf[farderNode]->nId >= minSize && weightedGraf[farderNode]->nId <= maxSize){
@@ -359,11 +368,11 @@ long cutGraf(node** graf, long n, int margin, node*** out){
         }
 
         // printf("%ld\n", farderNode);
-        mergeWithGraf(weightedGraf, nWeightedGraf, farderNode);
+        mergeWithGraf(weightedGraf, nWeightedGraf, farderNode, maxSize);
         nWeightedGraf--;
     
-        // printf("\n");
-        // printWeightedGraf(weightedGraf, nWeightedGraf);
+        printf("\n");
+        printWeightedGraf(weightedGraf, nWeightedGraf);
     }
     // printf("\n");
 
