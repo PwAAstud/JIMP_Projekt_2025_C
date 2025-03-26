@@ -39,7 +39,7 @@ int main(int argc, char *argv[]){
     int cutNumber = (numNoOption >= 2) ? atoi(noOption[1]) : 1;
     // zapisuje jako liczbe całkowitą 
     int maxMargin = (numNoOption >= 3) ? atoi(noOption[2]) : 10;
-    if(maxMargin < 0) maxMargin = 120;
+    if(maxMargin < 0) maxMargin = 0;
 
     printf("o: %s t: %d b: %d\n", outName, flagTermnal, flagBinary);
     printf("%s %d %d\n", inName, cutNumber, maxMargin);
