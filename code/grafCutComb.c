@@ -68,17 +68,30 @@ int isGrafConected(node** graf, long numGraf){
         nodeVisited[i] = 0;
     }
 
-    int nodeToCheck = 0;
-    do{
+    struct{
+        long next[numGraf];
+        long n;
+    } stack;
+    stack.n = 1;
+    stack.next[0] = 0;
+    
+
+    int nodeToCheck;
+    while (stack.n > 0){
+        stack.n--;
+        nodeToCheck = stack.next[stack.n];
+
         int j=0;
         for(long i = 0; i < graf[nodeToCheck]->n; i++){
             for(; j<numGraf && graf[j]->id < graf[nodeToCheck]->conetion[i]->id; j++);
             if(graf[nodeToCheck]->conetion[i] != graf[j]){
                 continue;
             }
-            if(nodeVisited[j] == -1){
+            if(nodeVisited[j] != 0){
                 continue;
             }
+            stack.next[stack.n] = j;
+            stack.n++;
             nodeVisited[j] = 1;
         }
         nodeVisited[nodeToCheck] = -1;
@@ -86,9 +99,8 @@ int isGrafConected(node** graf, long numGraf){
         //     printf("%d ", nodeVisited[z]);
         // }
         // printf("\n");
-        for(nodeToCheck = 0; nodeToCheck < numGraf && nodeVisited[nodeToCheck] != 1; nodeToCheck++);
-    } while (nodeToCheck < numGraf);
-
+    }
+    
     for(nodeToCheck = 0; nodeToCheck < numGraf && nodeVisited[nodeToCheck] != 0; nodeToCheck++);
     return nodeToCheck == numGraf;
 }
