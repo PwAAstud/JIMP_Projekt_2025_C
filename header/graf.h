@@ -17,4 +17,8 @@ void removdEmptyConection(node** graf, long num_graf);
 
 void returnNewGraf(node** graf, long num_graf, long* newGrafIds, long num_new, node*** out);
 
+// wymaga posotowanego grafu
+// zwraca -1 jak nie znajdzie
+long grafBinSearch(node** graf, long numGraf, long findId);
+
 #endif

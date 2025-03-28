@@ -68,3 +68,25 @@ void returnNewGraf(node** graf, long num_graf, long* newGrafIds, long num_new, n
     removdEmptyConection(*out, num_new);
 
 }
+
+long grafBinSearch(node** graf, long numGraf, long findId){
+    long l = -1;
+    long r = numGraf;
+    long m = (r+l)/2;
+
+    while (r - l > 1){
+        // printf("(%ld - %ld); ", l,r);
+        if(graf[m]->id == findId){
+            return m;
+        }
+        if(graf[m]->id < findId){
+            l = m;
+        }else{
+            r = m;
+        }
+
+        m = (r+l)/2;
+    }
+    
+    return -1;
+}
