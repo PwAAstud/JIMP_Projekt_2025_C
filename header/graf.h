@@ -9,6 +9,8 @@ typedef struct nodeIn{
     long n;
 } node;
 
+void printGraf(node** graf, long n);
+
 void sortFunc(node** graf, long n);
 
 void sortGrafData(node** graf, long n);

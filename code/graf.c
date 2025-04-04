@@ -2,6 +2,16 @@
 #include<stdio.h>
 #include<stdlib.h>
 
+void printGraf(node** graf, long n){
+    for(long i=0; i<n; i++){
+        printf("%ld: ", graf[i]->id);
+        for(long j=0; j<graf[i]->n; j++){
+            printf("%ld ", graf[i]->conetion[j]->id);
+        }
+        printf("\n");
+    }
+}
+
 void sortFunc(node** graf, long n){
     // urzywamy shell sorta
     node* temp;
