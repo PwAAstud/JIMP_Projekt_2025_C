@@ -58,6 +58,67 @@ void removdEmptyConection(node** graf, long num_graf){
     // printf("\n");
 }
 
+// nie usuwa polaczen miedzy outA i outB
+void makeSubGrafs(node** graf, char * set, long numGrafSet, node** outA, node** outB){
+    int numA=0, numB=0;
+    for(int i=0; i < numGrafSet; i++){
+        if(set[i]){
+            outA[numA] = graf[i];
+            numA++;
+        }else{
+            outB[numB] = graf[i];
+            numB++;
+        }
+    }
+}
+
+// wymaga posortowaego grafu funkcja *sortGrafData*
+int isGrafConected(node** graf, long numGraf){
+    // 0 niewadomo
+    // 1 do odwiedzenia
+    // -1 bylem
+    char nodeVisited[numGraf];
+    for(int i = 0; i < numGraf; i++){
+        nodeVisited[i] = 0;
+    }
+
+    struct{
+        long next[numGraf];
+        long n;
+    } stack;
+    stack.n = 1;
+    stack.next[0] = 0;
+    
+
+    int nodeToCheck;
+    while (stack.n > 0){
+        stack.n--;
+        nodeToCheck = stack.next[stack.n];
+
+        int j=0;
+        for(long i = 0; i < graf[nodeToCheck]->n; i++){
+            for(; j<numGraf && graf[j]->id < graf[nodeToCheck]->conetion[i]->id; j++);
+            if(graf[nodeToCheck]->conetion[i] != graf[j]){
+                continue;
+            }
+            if(nodeVisited[j] != 0){
+                continue;
+            }
+            stack.next[stack.n] = j;
+            stack.n++;
+            nodeVisited[j] = 1;
+        }
+        nodeVisited[nodeToCheck] = -1;
+        // for(int z=0; z<numGraf; z++){
+        //     printf("%d ", nodeVisited[z]);
+        // }
+        // printf("\n");
+    }
+    
+    for(nodeToCheck = 0; nodeToCheck < numGraf && nodeVisited[nodeToCheck] != 0; nodeToCheck++);
+    return nodeToCheck == numGraf;
+}
+
 // wymaga graf i newGrafIds zeby były posortowane po id
 void returnNewGraf(node** graf, long num_graf, long* newGrafIds, long num_new, node*** out){
     *(out) = malloc(sizeof(node)*num_new);
