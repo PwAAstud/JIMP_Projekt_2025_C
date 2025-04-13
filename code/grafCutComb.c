@@ -60,7 +60,6 @@ void static makeSubGrafs(node** graf, char * set, long numGrafSet, node** outA, 
     }
 }
 
-
 long cutGrafComb(node** graf, long numGraf, int margin, node*** out){
     if(numGraf <= 1){
         return 0;
@@ -89,18 +88,23 @@ long cutGrafComb(node** graf, long numGraf, int margin, node*** out){
     char set[numGraf];
     node* grafA[numGraf];
     node* grafB[numGraf];
+
+    // long iteration =0;
+
     for(int setSize = minSize; setSize<=numGraf/2; setSize++){
+        // printf("\r%d",setSize);
         int numGrafA = setSize;
         int numGrafB = numGraf - setSize;
-
+        // printf("%d\n", setSize);
         makeSet(set, numGraf, setSize);
         do{
+            // printf("\r%ld", iteration++);
             makeSubGrafs(graf, set, numGraf, grafA, grafB);
             if(!isGrafConected(grafA, numGrafA) || !isGrafConected(grafB, numGrafB)){
                 continue;
             }
             long newCut = countCuts(grafA, numGrafA);
-            // printf("A: ");
+            // printf("\nA: ");
             // for(int i=0; i<numGrafA; i++){
             //     printf("%ld ", grafA[i]->id);
             // }
@@ -108,7 +112,7 @@ long cutGrafComb(node** graf, long numGraf, int margin, node*** out){
             // for(int i=0; i<numGrafB; i++){
             //     printf("%ld ", grafB[i]->id);
             // }
-            // printf("; %ld", newCut);
+            // // printf("; %ld", newCut);
             // printf("\n");
 
             if(newCut < bestCut.cut){
@@ -118,10 +122,16 @@ long cutGrafComb(node** graf, long numGraf, int margin, node*** out){
                 bestCut.cut = newCut;
                 bestCut.n = numGrafA;
             }
+            // break;
 
         } while(setNext(set, numGraf));
+        // if(bestCut.n != 0) break;
     }
-
+    printf("\n ");
+    for(int i=0; i<bestCut.n; i++){
+        printf("%ld ", bestCut.nodeIds[i]);
+    }
+    printf("\n");
     returnNewGraf(graf, numGraf, bestCut.nodeIds, bestCut.n, out);
 
     return bestCut.n;
