@@ -44,20 +44,22 @@ int setNext(char* set, int n){
     return 1;
 }
 
-// wymaga polaczen do nikad
-long countCuts(node** graf, int numGraf){
-    long voidConection = 0;
-    for(long i = 0; i < numGraf; i++){
-        int z=0;
-        for(int j = 0; j < graf[i]->n; j++){
-            for(; z<numGraf && graf[z]->id < graf[i]->conetion[j]->id; z++);
-            if(graf[i]->conetion[j] != graf[z]){
-                voidConection++;
-            }
+// nie usuwa polaczen miedzy outA i outB
+// outA to 1
+// outB to 0
+void static makeSubGrafs(node** graf, char * set, long numGrafSet, node** outA, node** outB){
+    int numA=0, numB=0;
+    for(int i=0; i < numGrafSet; i++){
+        if(set[i]){
+            outA[numA] = graf[i];
+            numA++;
+        }else{
+            outB[numB] = graf[i];
+            numB++;
         }
     }
-    return voidConection;
 }
+
 
 long cutGrafComb(node** graf, long numGraf, int margin, node*** out){
     if(numGraf <= 1){

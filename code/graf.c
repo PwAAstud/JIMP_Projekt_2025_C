@@ -36,6 +36,21 @@ void sortGrafData(node** graf, long n){
     }
 }
 
+// wymaga polaczen do nikad
+long countCuts(node** graf, int numGraf){
+    long voidConection = 0;
+    for(long i = 0; i < numGraf; i++){
+        int z=0;
+        for(int j = 0; j < graf[i]->n; j++){
+            for(; z<numGraf && graf[z]->id < graf[i]->conetion[j]->id; z++);
+            if(graf[i]->conetion[j] != graf[z]){
+                voidConection++;
+            }
+        }
+    }
+    return voidConection;
+}
+
 // wymaga graf był posortowane po id
 void removdEmptyConection(node** graf, long num_graf){
     long remowdConection, checkingId;
@@ -56,20 +71,6 @@ void removdEmptyConection(node** graf, long num_graf){
         graf[i]->n -= remowdConection;
     }
     // printf("\n");
-}
-
-// nie usuwa polaczen miedzy outA i outB
-void makeSubGrafs(node** graf, char * set, long numGrafSet, node** outA, node** outB){
-    int numA=0, numB=0;
-    for(int i=0; i < numGrafSet; i++){
-        if(set[i]){
-            outA[numA] = graf[i];
-            numA++;
-        }else{
-            outB[numB] = graf[i];
-            numB++;
-        }
-    }
 }
 
 // wymaga posortowaego grafu funkcja *sortGrafData*
