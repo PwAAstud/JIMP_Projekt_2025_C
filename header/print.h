@@ -10,6 +10,6 @@ typedef struct zapiszmito{
     long rozmiar;
 } wczytanie;
 wczytanie* scan(char* in);
-void prit(wczytanie*, int, int);
-
+void prit(wczytanie*, int, int, int);
+void pritplik(wczytanie*, int, int, int);
 #endif

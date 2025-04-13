@@ -6,7 +6,8 @@
 #define memoryJump 16
 
 
-void prit(wczytanie* writ, int t, int b){
+void prit(wczytanie* writ, int t, int b, int cuts){
+    printf("%ln\n", cuts );
     printf("%s\n", writ->linia1);
     printf("%s\n", writ->linia2);
     printf("%s\n", writ->linia3);
@@ -47,23 +48,75 @@ void prit(wczytanie* writ, int t, int b){
       printf("\n");
 }
 
+void pritplik(wczytanie* writ, int t, int b, int cuts){
+    FILE *plik = fopen("wynik.csrrg", "w");
+    if (plik == NULL) {
+        perror("Nie moÅ¼na otworzyÄ‡ pliku wynik.csrrg");
+        return;
+    }
+    fprintf(plik, "%ln\n", cuts );
+    fprintf(plik, "%s\n", writ->linia1);
+    fprintf(plik, "%s\n", writ->linia2);
+    fprintf(plik, "%s\n", writ->linia3);
+
+    int i, p, pomoc = 0, ktore = 0;
+    long tab[writ->rozmiar];
+
+    if (t != 0 || b != 0) {
+        fclose(plik);
+        return;
+    }
+
+    for (i = 0; i < writ->rozmiar; i++) {
+        p = 0;
+        for (long j = 0; j < writ->nodes[i]->n; j++) {
+            if (writ->nodes[i]->conetion[j]->id > writ->nodes[i]->id)
+                p = 1;
+        }
+        if (p != 1) {
+            continue;
+        }
+
+        fprintf(plik, "%ld;", writ->nodes[i]->id);
+        tab[ktore] = pomoc;
+        ktore++;
+        pomoc++;
+
+        for (long j = 0; j < writ->nodes[i]->n && writ->nodes[i]->conetion[j]->id > writ->nodes[i]->id; j++) {
+            if (writ->nodes[i]->conetion[j] != NULL) {
+                fprintf(plik, "%ld;", writ->nodes[i]->conetion[j]->id);
+                pomoc++;
+            }
+        }
+    }
+
+    fprintf(plik, "\n");
+
+    for (i = 0; i <= ktore; i++) {
+        fprintf(plik, "%ld;", tab[i]);
+    }
+
+    fprintf(plik, "\n");
+    fclose(plik);
+}
+
 node* init_node(long id, long n) {
-    node* new_node = (node*)malloc(sizeof(node));  // alokacja pamiêci na wêze³
+    node* new_node = (node*)malloc(sizeof(node));  // alokacja pamiï¿½ci na wï¿½zeï¿½
     if (new_node == NULL) {
         printf("Blad alokacji pamieci!\n");
         exit(1);
     }
 
     new_node->id = id;  // ustawienie identyfikatora
-    new_node->n = n;    // ustawienie liczby po³¹czeñ
-    new_node->conetion = (node**)malloc(memoryJump * sizeof(node*));  // alokacja pamiêci na po³¹czenia
+    new_node->n = n;    // ustawienie liczby poï¿½ï¿½czeï¿½
+    new_node->conetion = (node**)malloc(memoryJump * sizeof(node*));  // alokacja pamiï¿½ci na poï¿½ï¿½czenia
     if (new_node->conetion == NULL) {
         printf("Blad alokacji pamieci na polaczenia!\n");
-        free(new_node);  // zwolnienie wczeœniej zaalokowanej pamiêci
+        free(new_node);  // zwolnienie wczeï¿½niej zaalokowanej pamiï¿½ci
         exit(1);
     }
 
-    // Inicjalizacja po³¹czeñ jako NULL
+    // Inicjalizacja poï¿½ï¿½czeï¿½ jako NULL
     for (long i = 0; i < n; i++) {
         new_node->conetion[i] = NULL;
     }
@@ -104,10 +157,10 @@ wczytanie* scan(char* plikw){
     long licznik1 = 0, licznik2 = 0;
     wczytanie* red= (wczytanie*)malloc(sizeof(wczytanie));
 
-    // Otwórz plik do odczytu
+    // Otwï¿½rz plik do odczytu
     plik = fopen(plikw, "r");
     if (plik == NULL) {
-        printf("Nie mo¿na otworzyæ pliku\n");
+        printf("Nie moï¿½na otworzyï¿½ pliku\n");
         return red;
     }
 
