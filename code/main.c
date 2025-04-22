@@ -56,29 +56,24 @@ int main(int argc, char *argv[]){
     long numGrafsToCuts[cutNumber+1];
     grafsToCuts[0] = fileData->graf;
     numGrafsToCuts[0] = fileData->numGraf;
+    // sortGrafData(grafsToCuts[0], numGrafsToCuts[0]);
+    // printf("%d\n", isGrafConected(grafsToCuts[0], numGrafsToCuts[0]));
 
     long cutGraf;
-    long sucesGraf;
+    long sucesGraf = 1;
     long sucesCut = 0;
     long newLen;
-    for(sucesGraf = 1; sucesGraf<=cutNumber; sucesGraf++){
-        // for(long i=0;i<sucesGraf;i++){
-        //     for(long j=0;j<numGrafsToCuts[i];j++){
-        //         printf("%ld ", grafsToCuts[i][j]->id);
-        //     }
-        //     printf("\n");
-        // }
-        // printf("\n");
+    for(long i = 1; i<=cutNumber; i++){
         newLen = 0;
         for(cutGraf = 0; cutGraf < sucesGraf; cutGraf++){
+            if(!isGrafConected(grafsToCuts[cutGraf], numGrafsToCuts[cutGraf])){ continue;}
             newLen = cutGrafStoner(grafsToCuts[cutGraf], numGrafsToCuts[cutGraf], maxMargin, &grafsToCuts[sucesGraf]);
             numGrafsToCuts[cutGraf] -= newLen;
             numGrafsToCuts[sucesGraf] = newLen;
+            // printf("%ld %ld\n", cutGraf, sucesGraf);
             // printf("%ld ", newLen);
             if(newLen != 0){
                 sucesGraf++;
-                printf("%d ", isGrafConected(grafsToCuts[sucesGraf-2], numGrafsToCuts[sucesGraf-2]));
-                printf("%d\n", isGrafConected(grafsToCuts[sucesGraf-1], numGrafsToCuts[sucesGraf-1]));
                 // printf("a");
                 break;
             }
@@ -88,19 +83,22 @@ int main(int argc, char *argv[]){
             break;
         }
     }
+    sucesCut = sucesGraf-1;
 
     if(flagTermnal){
         for(long i=0; i<sucesGraf;i++){
             printf("\n");
             // printf("%ld ", numGrafsToCuts[i]);
-            printf("is conected: %d\n",isGrafConected(grafsToCuts[i], numGrafsToCuts[i]));
+            // printf("is conected: %d\n",isGrafConected(grafsToCuts[i], numGrafsToCuts[i]));
             printGraf(grafsToCuts[i], numGrafsToCuts[i]);
         }
     }
-
+    // printf("%ld<", sucesGraf);
     long index = 0;
     for(long i=0; i<sucesGraf;i++){
+        // printf("%ld ", numGrafsToCuts[i]);
         for(long j=0; j<numGrafsToCuts[i]; j++){
+            // printf("%ld ", index);
             fileData->graf[index] = grafsToCuts[i][j];
             index++;
         }
@@ -113,6 +111,5 @@ int main(int argc, char *argv[]){
     }else{
         saveGrafDataBin(outName, fileData, sucesCut);
     }
-
     return 0;
 }

@@ -50,24 +50,24 @@ long binSherchPointers(void** list, long numList, void* find){
 
 weightedNode** grafToWeighted(node** graf, long n){
     weightedNode** retVal = malloc(sizeof(weightedNode*)*n);
-    if(!retVal){ fprintf(stderr, "[!] nie ma pamicei");}
+    if(!retVal){ fprintf(stderr, "[!] nie ma pamicei 1"); exit(1);}
 
     for(long i=0; i<n; i++){
         retVal[i] = malloc(sizeof(weightedNode));
-        if(!retVal[i]){ fprintf(stderr, "[!] nie ma pamicei");}
+        if(!retVal[i]){ fprintf(stderr, "[!] nie ma pamicei 2"); exit(2);}
 
         retVal[i]->nId = 1;
         retVal[i]->ids = malloc(sizeof(long)*retVal[i]->nId);
-        if(!retVal[i]->ids){ fprintf(stderr, "[!] nie ma pamicei");}
+        if(!retVal[i]->ids){ fprintf(stderr, "[!] nie ma pamicei 3"); exit(3);}
         retVal[i]->ids[0] = graf[i]->id;
     }
 
     for(long i=0; i<n; i++){
         retVal[i]->nCon = graf[i]->n;
         retVal[i]->conetion = malloc(sizeof(weightedNode*)*graf[i]->n);
-        if(!retVal[i]->conetion){ fprintf(stderr, "[!] nie ma pamicei");}
+        if(!retVal[i]->conetion){ fprintf(stderr, "[!] nie ma pamicei"); exit(4);}
         retVal[i]->weighted = malloc(sizeof(long)*graf[i]->n);
-        if(!retVal[i]->weighted){ fprintf(stderr, "[!] nie ma pamicei");}
+        if(!retVal[i]->weighted){ fprintf(stderr, "[!] nie ma pamicei"); exit(5);}
 
         // zakladam ze zarówno graf jaki i conetion sa posotowanie rosnaco
         long findIndex = 0;
@@ -205,30 +205,35 @@ void mergeWithGraf(weightedNode** graf, long n, long nodeIndex, long maxSize){
     weightedNode* deletNode = graf[nodeIndex];
 
     if(deletNode->nCon == 0){
-        fprintf(stderr, "[!] node nie ma połączeń\n");
+        fprintf(stderr, "[!] node nie ma połączeń\n"); exit(5);
     }
+    // for(long i=0;i<n;i++){
+    //     printf("%p:", graf[i]);
+    //     for(long j=0; j<graf[i]->nCon;j++){
+    //         printf("%p,", graf[i]->conetion[j]);
+    //     }
+    //     printf(";\n");
+    // }
+    // printf("\n");
     weightedNode* mergeWith = choseNodeToMerge(deletNode, n, maxSize);
 
     // printf("%p %p\n", mergeWith, deletNode);
     // pozbycie sie polaczenie miedzy mergeWith i deletNode
     for(i=0; deletNode->conetion[i] != mergeWith; i++);
     removeConection(deletNode, i);
-
     // printf(">%p, %d\n",deletNode, mergeWith->nCon);
-    for(i=0; mergeWith->conetion[i] != deletNode; i++){
-        // printf("%p;", mergeWith->conetion[i]);
-    };
-    // printf("\n");
+    for(i=0; mergeWith->conetion[i] != deletNode; i++);
     removeConection(mergeWith, i);
 
     // laczenie id
-    mergeWith->ids = realloc(mergeWith->ids, (mergeWith->nId+deletNode->nId)* sizeof(long));
-    if(!mergeWith->ids){ fprintf(stderr, "[!] nie ma pamicei");}
+    mergeWith->ids = realloc(mergeWith->ids, (mergeWith->nId + deletNode->nId)*sizeof(long));
+    if(!mergeWith->ids){ fprintf(stderr, "[!] nie ma pamicei 4"); exit(6);}
     for(i = 0; i<deletNode->nId; i++){
         // printf("%d ",deletNode->ids[i]);
         mergeWith->ids[mergeWith->nId+i] = deletNode->ids[i];
     }
     mergeWith->nId += deletNode->nId;
+
     long isDuplicat;
     for(i=0; i<deletNode->nCon; i++){
         long j;
@@ -263,23 +268,11 @@ void mergeWithGraf(weightedNode** graf, long n, long nodeIndex, long maxSize){
             deletNode->conetion[i]->conetion[z] = mergeWith;
         }
     }
-    // for(int i=0; i<mergeWith->nCon;i++){
-    //     printf("%d ", mergeWith->conetion[i]->ids[0]);
-    // }
-    // printf("\n");
-    // for(int i=0;i<mergeWith->nCon;i++){
-    //     printf("%p ",mergeWith->conetion[i]);
-    // }
-    // printf(";");
-    // for(int i=0;i<deletNode->nCon;i++){
-    //     printf("%p ",deletNode->conetion[i]);
-    // }
-    // printf("\n");
 
     mergeWith->conetion = realloc(mergeWith->conetion, (mergeWith->nCon+deletNode->nCon)* sizeof(weightedNode*));
-    if(!mergeWith->conetion){ fprintf(stderr, "[!] nie ma pamicei");}
+    if(!mergeWith->conetion && 0!=(mergeWith->nCon+deletNode->nCon)){ fprintf(stderr, "[!] nie ma pamicei 5"); exit(7);}
     mergeWith->weighted = realloc(mergeWith->weighted, (mergeWith->nCon+deletNode->nCon)* sizeof(long));
-    if(!mergeWith->weighted){ fprintf(stderr, "[!] nie ma pamicei");}
+    if(!mergeWith->weighted){ fprintf(stderr, "[!] nie ma pamicei 6"); exit(8);}
 
     for(i=0; i<deletNode->nCon; i++){
         mergeWith->conetion[mergeWith->nCon+i] = deletNode->conetion[i];
@@ -287,16 +280,12 @@ void mergeWithGraf(weightedNode** graf, long n, long nodeIndex, long maxSize){
     }
     // printf("%ld \n", deletNode->nCon);
     mergeWith->nCon+=deletNode->nCon;
-
-    // for(int i=0;i<mergeWith->nCon;i++){
-    //     printf("%p ",mergeWith->conetion[i]);
-    // }
-    // printf("\n\n");
-
+    
     freeWeightedNode(deletNode);
     for(i=nodeIndex+1; i<n; i++){
         graf[i-1] = graf[i];
     }
+
 }
 
 // https://en.wikipedia.org/wiki/Stoer%E2%80%93Wagner_algorithm
@@ -307,17 +296,17 @@ long cutGrafStoner(node** graf, long n, int margin, node*** out){
     
     long maxSize = (n*(200+margin))/400;
     long minSize = n - maxSize;
-    if(minSize == 0){
-        minSize++;
-        maxSize--;
+    if(maxSize >= n){
+        maxSize = n-1;
+        minSize = 1;
     }
     // printf("%ld - %ld\n", minSize, maxSize);
     if(maxSize < minSize){
         return 0;
     }
     sortGrafData(graf, n);
-    printf("%d\n", isGrafConected(graf, n));
-    printGraf(graf, n);
+    // printf("%d\n", isGrafConected(graf, n));
+    // printGraf(graf, n);
     // for(long i=0;i<n;i++){
     //     printf("%ld:%ld ", graf[i]->id,graf[i]->n);
     // }

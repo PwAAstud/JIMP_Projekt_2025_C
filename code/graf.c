@@ -76,7 +76,6 @@ void removdEmptyConection(node** graf, long num_graf){
     // printf("---\n");
 }
 
-// wymaga posortowaego grafu funkcja *sortGrafData*
 int isGrafConected(node** graf, long numGraf){
     // 0 niewadomo
     // 1 do odwiedzenia
@@ -101,8 +100,8 @@ int isGrafConected(node** graf, long numGraf){
 
         int j=0;
         for(long i = 0; i < graf[nodeToCheck]->n; i++){
-            for(; j<numGraf && graf[j]->id < graf[nodeToCheck]->conetion[i]->id; j++);
-            if(graf[nodeToCheck]->conetion[i] != graf[j]){
+            for(j=0; j<numGraf && graf[j]->id != graf[nodeToCheck]->conetion[i]->id; j++);
+            if(j >= numGraf){
                 continue;
             }
             if(nodeVisited[j] != 0){
@@ -113,12 +112,12 @@ int isGrafConected(node** graf, long numGraf){
             nodeVisited[j] = 1;
         }
         nodeVisited[nodeToCheck] = -1;
-        // for(int z=0; z<numGraf; z++){
-        //     printf("%d ", nodeVisited[z]);
-        // }
-        // printf("\n");
     }
     
+    // for(int z=0; z<numGraf; z++){
+    //     printf("%d ", nodeVisited[z]);
+    // }
+    // printf("\n");
     for(nodeToCheck = 0; nodeToCheck < numGraf && nodeVisited[nodeToCheck] != 0; nodeToCheck++);
     return nodeToCheck == numGraf;
 }
@@ -128,14 +127,15 @@ void returnNewGraf(node** graf, long num_graf, long* newGrafIds, long num_new, n
     if(num_new == 0){
         return;
     }
-    *(out) = malloc(sizeof(node)*num_new);
-    if(!*(out)){ fprintf(stderr, "[!] nie ma pamicei");}
+    *out = malloc(sizeof(node*)*num_new);
+    if(!(*out)){ fprintf(stderr, "[!] nie ma pamicei");}
 
     // podzielenie na dwie czeski
     long fillOut = 0;
     for(long i=0; i<num_graf; i++){
         graf[i-fillOut] = graf[i];
-        if(graf[i]->id == newGrafIds[fillOut]){
+        if(fillOut<num_new && graf[i]->id == newGrafIds[fillOut]){
+            // printf("%ld ", graf[i]->id);
             (*out)[fillOut] = graf[i];
             fillOut++;
         }
