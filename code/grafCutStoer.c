@@ -19,6 +19,35 @@ int sortujRosnaco( const void* a, const void* b){
     return *(long*)a - *(long*)b;
 }
 
+int sortujRosnacoPointers( const void* a, const void* b){
+    void* pa = *(void**)a;
+    void* pb = *(void**)b;
+    // printf("%p,%p\n", pa, pb);
+    // return pa-pb;
+    if(pa > pb){return 1; }
+    if(pa < pb){return -1; }
+    return 0;
+}
+
+long binSherchPointers(void** list, long numList, void* find){
+    long left = -1;
+    long right = numList;
+    long center = (right + left)/2;
+
+    while (right - left > 1){
+        if(list[center] == find){
+            return center;
+        }
+        if(list[center] < find){
+            left = center;
+        }else{
+            right = center;
+        }
+        center = (right + left)/2;
+    }
+    return -1;
+}
+
 weightedNode** grafToWeighted(node** graf, long n){
     weightedNode** retVal = malloc(sizeof(weightedNode*)*n);
     if(!retVal){ fprintf(stderr, "[!] nie ma pamicei");}
@@ -43,7 +72,8 @@ weightedNode** grafToWeighted(node** graf, long n){
         // zakladam ze zarówno graf jaki i conetion sa posotowanie rosnaco
         long findIndex = 0;
         for(long j=0; j<graf[i]->n; j++){
-            for(; graf[i]->conetion[j]->id != graf[findIndex]->id; findIndex++);
+            findIndex = grafBinSearch(graf, n, graf[i]->conetion[j]->id);
+            // for(; graf[i]->conetion[j]->id != graf[findIndex]->id; findIndex++);
             // findIndex = (graf[0] - graf[i]->conetion[j])/sizeof(node*);
             retVal[i]->conetion[j] = retVal[findIndex];
             retVal[i]->weighted[j] = 1;
@@ -94,11 +124,16 @@ long findNextNode(weightedNode** graf, long n, long* weighted){
 long minimumCutPhase(weightedNode** graf, long n){
     // -1 jest w blocku
     long weighted[n];
+    long smalSise = 0;
     for(long i=0; i<n; i++){
         weighted[i] = 0;
+        if(graf[i]->nCon < graf[smalSise]->nCon){
+            smalSise = i;
+        }
     }
+    // printf("%d\n", smalSise);
 
-    addToBlock(graf, n, weighted, graf[0]);
+    addToBlock(graf, n, weighted, graf[smalSise]);
     long nextNode;
     for(long i=2; i<n; i++){
         nextNode = findNextNode(graf, n, weighted);
@@ -174,28 +209,17 @@ void mergeWithGraf(weightedNode** graf, long n, long nodeIndex, long maxSize){
     }
     weightedNode* mergeWith = choseNodeToMerge(deletNode, n, maxSize);
 
-    // for(int i=0; i<mergeWith->nCon;i++){
-    //     printf("%d ", mergeWith->conetion[i]->ids[0]);
-    // }
-    // printf("\n");
-    // for(int i=0; i<deletNode->nCon;i++){
-    //     printf("%d ", deletNode->conetion[i]->ids[0]);
-    // }
-    // printf("\n");
-
-
-    //tymczasiwe do testow
-    // deletNode = graf[1];
-    // mergeWith = graf[0];
-    // nodeIndex = 1;
-    // test end
-
+    // printf("%p %p\n", mergeWith, deletNode);
     // pozbycie sie polaczenie miedzy mergeWith i deletNode
-    for(i=0; mergeWith->conetion[i] != deletNode; i++);
-    removeConection(mergeWith, i);
-
     for(i=0; deletNode->conetion[i] != mergeWith; i++);
     removeConection(deletNode, i);
+
+    // printf(">%p, %d\n",deletNode, mergeWith->nCon);
+    for(i=0; mergeWith->conetion[i] != deletNode; i++){
+        // printf("%p;", mergeWith->conetion[i]);
+    };
+    // printf("\n");
+    removeConection(mergeWith, i);
 
     // laczenie id
     mergeWith->ids = realloc(mergeWith->ids, (mergeWith->nId+deletNode->nId)* sizeof(long));
@@ -205,15 +229,17 @@ void mergeWithGraf(weightedNode** graf, long n, long nodeIndex, long maxSize){
         mergeWith->ids[mergeWith->nId+i] = deletNode->ids[i];
     }
     mergeWith->nId += deletNode->nId;
-
+    long isDuplicat;
     for(i=0; i<deletNode->nCon; i++){
         long j;
         long z;
+        isDuplicat = 0;
         // sumowanie wag przy tych samych
         for(j=0; j<mergeWith->nCon; j++){
             if(mergeWith->conetion[j] != deletNode->conetion[i]){
                 continue;
             }
+            isDuplicat = 1;
             mergeWith->weighted[j] += deletNode->weighted[i];
 
             // pozbycie polaczenia do deletnode z punktu wspulnie po jego stnie
@@ -231,13 +257,22 @@ void mergeWithGraf(weightedNode** graf, long n, long nodeIndex, long maxSize){
             break;
         }
 
-        if(j == mergeWith->nCon){ // nieduplikat
+        if(!isDuplicat){ // nieduplikat
             for(z=0; deletNode->conetion[i]->conetion[z] != deletNode; z++);
+            // printf(" %d ", z>= deletNode->conetion[i]->nCon);
             deletNode->conetion[i]->conetion[z] = mergeWith;
         }
     }
     // for(int i=0; i<mergeWith->nCon;i++){
     //     printf("%d ", mergeWith->conetion[i]->ids[0]);
+    // }
+    // printf("\n");
+    // for(int i=0;i<mergeWith->nCon;i++){
+    //     printf("%p ",mergeWith->conetion[i]);
+    // }
+    // printf(";");
+    // for(int i=0;i<deletNode->nCon;i++){
+    //     printf("%p ",deletNode->conetion[i]);
     // }
     // printf("\n");
 
@@ -253,6 +288,10 @@ void mergeWithGraf(weightedNode** graf, long n, long nodeIndex, long maxSize){
     // printf("%ld \n", deletNode->nCon);
     mergeWith->nCon+=deletNode->nCon;
 
+    // for(int i=0;i<mergeWith->nCon;i++){
+    //     printf("%p ",mergeWith->conetion[i]);
+    // }
+    // printf("\n\n");
 
     freeWeightedNode(deletNode);
     for(i=nodeIndex+1; i<n; i++){
@@ -265,29 +304,35 @@ long cutGrafStoner(node** graf, long n, int margin, node*** out){
     if(n <= 1){
         return 0;
     }
-
-    long maxSize = n*(200+margin)/400;
+    
+    long maxSize = (n*(200+margin))/400;
     long minSize = n - maxSize;
+    if(minSize == 0){
+        minSize++;
+        maxSize--;
+    }
     // printf("%ld - %ld\n", minSize, maxSize);
     if(maxSize < minSize){
         return 0;
     }
-
     sortGrafData(graf, n);
-
-    weightedNode** weightedGraf = grafToWeighted(graf, n);
-    long nWeightedGraf = n;
-
-    // for(long i=0; i<n; i++){
-    //     printf("%ld: ", graf[i]->id);
-    //     for(long j=0; j<graf[i]->n; j++){
-    //         printf("%ld ", graf[i]->conetion[j]->id);
-    //     }
-    //     printf("\n");
+    printf("%d\n", isGrafConected(graf, n));
+    printGraf(graf, n);
+    // for(long i=0;i<n;i++){
+    //     printf("%ld:%ld ", graf[i]->id,graf[i]->n);
     // }
     // printf("\n");
-
+    
+    weightedNode** weightedGraf = grafToWeighted(graf, n);
+    long nWeightedGraf = n;
     // printWeightedGraf(weightedGraf, nWeightedGraf);
+    // printf("\n");
+
+    qsort( weightedGraf, nWeightedGraf, sizeof(weightedNode*), sortujRosnacoPointers);
+    // for(long i=0; i<nWeightedGraf; i++){
+    //     printf("%d ", weightedGraf[i]->ids[0]);
+    // }
+    // printf("\n");
 
     struct{
         long nodeIds[n];
@@ -298,10 +343,11 @@ long cutGrafStoner(node** graf, long n, int margin, node*** out){
     bestCut.cut = 0x7fffffff; // licze ze nie bedzie tak dzurzego ciencia. potrebuje liczby inf na start
     
     long newCut;
+
     while (nWeightedGraf > 2){
+        // printf("\r%ld", nWeightedGraf);
         long farderNode = minimumCutPhase(weightedGraf, nWeightedGraf);
         // printf("chosen: %ld\n", weightedGraf[farderNode]->ids[0]);
-        
         // printf("size: %ld\n", weightedGraf[farderNode]->nId);
         if(weightedGraf[farderNode]->nId >= minSize && weightedGraf[farderNode]->nId <= maxSize){
             newCut = 0;
@@ -316,31 +362,20 @@ long cutGrafStoner(node** graf, long n, int margin, node*** out){
                 bestCut.n = weightedGraf[farderNode]->nId;
             }
         }
-
         // printf("%ld\n", farderNode);
         mergeWithGraf(weightedGraf, nWeightedGraf, farderNode, maxSize);
         nWeightedGraf--;
-    
         // printf("\n");
         // printWeightedGraf(weightedGraf, nWeightedGraf);
     }
-    // printf("\n");
-
     qsort( bestCut.nodeIds, bestCut.n, sizeof(long), sortujRosnaco);
     
-    // printf("%ld: ", bestCut.cut);
-    // for(long i=0; i< bestCut.n; i++){
-    //     printf("%ld ", bestCut.nodeIds[i]);
-    // }
-    // printf("\n\n");
-
-    // bestCut.nodeIds = {0,1,2};
-
     returnNewGraf(graf, n, bestCut.nodeIds, bestCut.n, out);
-
+    
     for(long i=0; i<nWeightedGraf; i++){
         freeWeightedNode(weightedGraf[i]);
     }
-
+    
+    // printf("\n");
     return bestCut.n;
 }

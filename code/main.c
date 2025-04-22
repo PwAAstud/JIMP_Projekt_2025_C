@@ -2,6 +2,7 @@
 #include"..\header\grafIO.h"
 #include"..\header\grafCutComb.h"
 #include"..\header\grafCutStoer.h"
+#include"..\header\grafCutGrow.h"
 #include<unistd.h>
 #include<stdio.h>
 #include<stdlib.h>
@@ -61,24 +62,29 @@ int main(int argc, char *argv[]){
     long sucesCut = 0;
     long newLen;
     for(sucesGraf = 1; sucesGraf<=cutNumber; sucesGraf++){
+        // for(long i=0;i<sucesGraf;i++){
+        //     for(long j=0;j<numGrafsToCuts[i];j++){
+        //         printf("%ld ", grafsToCuts[i][j]->id);
+        //     }
+        //     printf("\n");
+        // }
+        // printf("\n");
         newLen = 0;
         for(cutGraf = 0; cutGraf < sucesGraf; cutGraf++){
-            // printf("%ld %ld; ",sucesGraf, cutGraf);
-            // newLen = cutGrafComb(grafsToCuts[cutGraf], numGrafsToCuts[cutGraf], maxMargin, &grafsToCuts[sucesGraf]);
             newLen = cutGrafStoner(grafsToCuts[cutGraf], numGrafsToCuts[cutGraf], maxMargin, &grafsToCuts[sucesGraf]);
             numGrafsToCuts[cutGraf] -= newLen;
             numGrafsToCuts[sucesGraf] = newLen;
             // printf("%ld ", newLen);
             if(newLen != 0){
-                sucesCut++;
+                sucesGraf++;
+                printf("%d ", isGrafConected(grafsToCuts[sucesGraf-2], numGrafsToCuts[sucesGraf-2]));
+                printf("%d\n", isGrafConected(grafsToCuts[sucesGraf-1], numGrafsToCuts[sucesGraf-1]));
                 // printf("a");
                 break;
             }
         }
         // printf("%ld\n", newLen);
         if(newLen == 0){
-            // printf("b");
-            // sucesGraf++;
             break;
         }
     }
@@ -87,7 +93,7 @@ int main(int argc, char *argv[]){
         for(long i=0; i<sucesGraf;i++){
             printf("\n");
             // printf("%ld ", numGrafsToCuts[i]);
-            // printf("is conected: %d\n",isGrafConected(grafsToCuts[i], numGrafsToCuts[i]));
+            printf("is conected: %d\n",isGrafConected(grafsToCuts[i], numGrafsToCuts[i]));
             printGraf(grafsToCuts[i], numGrafsToCuts[i]);
         }
     }

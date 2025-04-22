@@ -53,6 +53,7 @@ long countCuts(node** graf, int numGraf){
 
 // wymaga graf był posortowane po id
 void removdEmptyConection(node** graf, long num_graf){
+    // printGraf(graf, num_graf);
     long remowdConection, checkingId;
     for(long i=0; i<num_graf; i++){
         remowdConection = 0;
@@ -71,6 +72,8 @@ void removdEmptyConection(node** graf, long num_graf){
         graf[i]->n -= remowdConection;
     }
     // printf("\n");
+    // printGraf(graf, num_graf);
+    // printf("---\n");
 }
 
 // wymaga posortowaego grafu funkcja *sortGrafData*
@@ -122,6 +125,9 @@ int isGrafConected(node** graf, long numGraf){
 
 // wymaga graf i newGrafIds zeby były posortowane po id
 void returnNewGraf(node** graf, long num_graf, long* newGrafIds, long num_new, node*** out){
+    if(num_new == 0){
+        return;
+    }
     *(out) = malloc(sizeof(node)*num_new);
     if(!*(out)){ fprintf(stderr, "[!] nie ma pamicei");}
 
@@ -135,10 +141,8 @@ void returnNewGraf(node** graf, long num_graf, long* newGrafIds, long num_new, n
         }
     }
     num_graf -= num_new;
-
     removdEmptyConection(graf, num_graf);
     removdEmptyConection(*out, num_new);
-
 }
 
 long grafBinSearch(node** graf, long numGraf, long findId){
