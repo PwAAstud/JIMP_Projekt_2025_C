@@ -118,8 +118,12 @@ static void freeWeightedNode(weightedNode* node){
 
 // toCheck i weighted musza byc gotowe do powiekszenia
 // nodeToAdd->conetion musza byc posortowane
-static long addToBlock(weightedNode** toCheck, long* weighted, long numToCheck, weightedNode** graf, char* visited, long numGraf, weightedNode* nodeToAdd){
+static long addToBlock(weightedNode*** pToCheck, long** pWeighted, long numToCheck, weightedNode*** pBufferToCheck, long** pBufferWeighted, weightedNode** graf, char* visited, long numGraf, weightedNode* nodeToAdd){
     // long long start = current_time_ns();
+    weightedNode** toCheck = *pToCheck;
+    long* weighted = *pWeighted;
+    weightedNode** buferToCheck = *pBufferToCheck; 
+    long* butterWeighted = *pBufferWeighted;
 
     long remove = binSherchPointers((void**)toCheck, numToCheck, nodeToAdd);
     if(remove >= 0){
@@ -138,37 +142,35 @@ static long addToBlock(weightedNode** toCheck, long* weighted, long numToCheck, 
 
     // start = current_time_ns();
 
-    weightedNode* tempCon[numToCheck + nodeToAdd->nCon];
-    long tempaWeig[numToCheck + nodeToAdd->nCon];
     long indexTemp = 0;
     long indexLeft = 0;
     long indexRight = 0;
     while(indexLeft < numToCheck && indexRight < nodeToAdd->nCon){
         if(toCheck[indexLeft] == nodeToAdd->conetion[indexRight]){
-            tempCon[indexTemp] = toCheck[indexLeft];
-            tempaWeig[indexTemp] = weighted[indexLeft] + nodeToAdd->weighted[indexRight];
+            buferToCheck[indexTemp] = toCheck[indexLeft];
+            butterWeighted[indexTemp] = weighted[indexLeft] + nodeToAdd->weighted[indexRight];
 
             indexTemp++; indexLeft++; indexRight++;
 
         }else if(toCheck[indexLeft] < nodeToAdd->conetion[indexRight]){
-            tempCon[indexTemp] = toCheck[indexLeft];
-            tempaWeig[indexTemp] = weighted[indexLeft];
+            buferToCheck[indexTemp] = toCheck[indexLeft];
+            butterWeighted[indexTemp] = weighted[indexLeft];
 
             indexTemp++; indexLeft++;
 
         }else{
             indexInGraf = binSherchPointers((void**)graf, numGraf, nodeToAdd->conetion[indexRight]);
             if(visited[indexInGraf] != 1){
-                tempCon[indexTemp] = nodeToAdd->conetion[indexRight];
-                tempaWeig[indexTemp] = nodeToAdd->weighted[indexRight];
+                buferToCheck[indexTemp] = nodeToAdd->conetion[indexRight];
+                butterWeighted[indexTemp] = nodeToAdd->weighted[indexRight];
                 indexTemp++;
             }
             indexRight++;
         }
     }
     for(; indexLeft < numToCheck; indexLeft++){
-        tempCon[indexTemp] = toCheck[indexLeft];
-        tempaWeig[indexTemp] = weighted[indexLeft];
+        buferToCheck[indexTemp] = toCheck[indexLeft];
+        butterWeighted[indexTemp] = weighted[indexLeft];
         indexTemp++;
     }
     for(; indexRight < nodeToAdd->nCon; indexRight++){
@@ -176,8 +178,8 @@ static long addToBlock(weightedNode** toCheck, long* weighted, long numToCheck, 
         if(visited[indexInGraf] == 1){
             continue;
         }
-        tempCon[indexTemp] = nodeToAdd->conetion[indexRight];
-        tempaWeig[indexTemp] = nodeToAdd->weighted[indexRight];
+        buferToCheck[indexTemp] = nodeToAdd->conetion[indexRight];
+        butterWeighted[indexTemp] = nodeToAdd->weighted[indexRight];
 
         indexTemp++;
     }
@@ -185,20 +187,33 @@ static long addToBlock(weightedNode** toCheck, long* weighted, long numToCheck, 
 
     // start = current_time_ns();
     // // out
-    for(long i=0; i < indexTemp; i++){
-        toCheck[i] = tempCon[i];
-        weighted[i] = tempaWeig[i];
-    }
+    // for(long i=0; i < indexTemp; i++){
+    //     toCheck[i] = buferToCheck[i];
+    //     weighted[i] = butterWeighted[i];
+    // }
+
+    *pToCheck = buferToCheck;
+    *pWeighted = butterWeighted;
+    *pBufferToCheck = toCheck;
+    *pBufferWeighted = weighted;
+
+
+    // weightedNode*** pToCheck, long** pWeighted, long numToCheck, weightedNode*** pBufferToCheck, long** pBufferWeighted
+
     // printf("%lld\n", current_time_ns() - start);
 
-    // printf("\r__________________________________________________\r");
+    // printf("\r");
     return indexTemp;
 }
 
 // index punktu
 static long findNextNode(weightedNode** toCheck, long* weighted, long numToCheck){
+    // long sumBig = (weighted[numToCheck-1] > 1);
     long maxIndex = numToCheck-1;
     for(long i=numToCheck-2; i>=0; i--){
+        // if(weighted[i] > 1){
+        //     sumBig++;
+        // }
         if(weighted[maxIndex] < weighted[i]){
             maxIndex = i;
         }
@@ -206,15 +221,18 @@ static long findNextNode(weightedNode** toCheck, long* weighted, long numToCheck
             maxIndex = i;
         }
     }
+    // printf("%ld\n", sumBig);
     return maxIndex;
 }
 
 static long minimumCutPhase(weightedNode** graf, long numGraf){
     
     // para list to przesztiwania
-    weightedNode* toCheck[numGraf]; 
-    long weighted[numGraf];
+    weightedNode** toCheck = malloc(numGraf*sizeof(weightedNode*)); 
+    long* weighted = malloc(numGraf*sizeof(long));
     long numToCheck = 0;
+    weightedNode** bufferToCheck = malloc(numGraf*sizeof(weightedNode*)); 
+    long* bufferWeighted = malloc(numGraf*sizeof(long));
     
     // -1 jest w blocku
     char visited[numGraf];
@@ -222,14 +240,31 @@ static long minimumCutPhase(weightedNode** graf, long numGraf){
         visited[i] = 0;
     }
     // printf("%d\n", smalSise);
-    numToCheck = addToBlock(toCheck, weighted, numToCheck, graf, visited, numGraf, graf[0]);
+    numToCheck = addToBlock(&toCheck, &weighted, numToCheck, &bufferToCheck, &bufferWeighted, graf, visited, numGraf, graf[0]);
     long nextNode;
+
     for(long i=2; i<numGraf; i++){
+        // printf("%ld\n", numToCheck);
+        // for(long a=0; a<numToCheck; a++){
+        //     printf("%d: %d; ", toCheck[a]->ids[0], weighted[a]);
+        // }
+        // printf("\n");
+        // long long start = current_time_ns();
         nextNode = findNextNode(toCheck, weighted, numToCheck);
-        numToCheck = addToBlock(toCheck, weighted, numToCheck, graf, visited, numGraf, toCheck[nextNode]);
+        // printf("%lld ", current_time_ns() - start);
+        // start = current_time_ns();
+        numToCheck = addToBlock(&toCheck, &weighted, numToCheck, &bufferToCheck, &bufferWeighted, graf, visited, numGraf, toCheck[nextNode]);
+        // printf("%lld\n", current_time_ns() - start);
     }
+    // printf("\n");
+    long retVal = binSherchPointers((void**)graf, numGraf, toCheck[0]);
+
+    free(toCheck);
+    free(weighted);
+    free(bufferToCheck);
+    free(bufferWeighted);
     
-    return binSherchPointers((void**)graf, numGraf, toCheck[0]);
+    return retVal;
 }
 
 // graf[nodeIndex]
@@ -501,16 +536,17 @@ long cutGrafStoner(node** graf, long n, int margin, node*** out){
     
     long newCut;
 
-    while (nWeightedGraf > 1){
-        //printf("\r%ld", nWeightedGraf);
+    // float sumTime = 0;
 
+    while (nWeightedGraf > 1){
+        // printf("%ld ", nWeightedGraf);
         // clock_t start = clock();
+        
         long farderNode = minimumCutPhase(weightedGraf, nWeightedGraf);
         // printf("chosen: %ld\n", weightedGraf[farderNode]->ids[0]);
         // printf("size: %ld\n", weightedGraf[farderNode]->nId);
-
-        // printf("%f\n", (float)(clock() - start) / CLOCKS_PER_SEC);
-
+        // printf("%ld: %f ", nWeightedGraf,(float)(clock() - start) / CLOCKS_PER_SEC);
+        
         if(weightedGraf[farderNode]->nId >= minSize && weightedGraf[farderNode]->nId <= maxSize){
             newCut = 0;
             for(long i=0; i< weightedGraf[farderNode]->nCon; i++){
@@ -525,10 +561,12 @@ long cutGrafStoner(node** graf, long n, int margin, node*** out){
             }
         }
         // printf("%ld\n", farderNode);
+        // start = clock();
         mergeWithGraf(weightedGraf, nWeightedGraf, farderNode, maxSize);
         nWeightedGraf--;
         // printf("\n");
-        // printWeightedGraf(weightedGraf, nWeightedGraf);
+        // printWeightedGraf(, nWeightedGraf);
+        // printf("%f\r",(float)(clock() - start) / CLOCKS_PER_SEC);
     }
     qsort( bestCut.nodeIds, bestCut.n, sizeof(long), sortujRosnaco);
     
