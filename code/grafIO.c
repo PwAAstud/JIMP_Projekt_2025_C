@@ -162,7 +162,9 @@ void saveGrafDataBin(char* outName, grafData* data, long udaneCieca){
     long endofLine = -2;
 
     fwrite( &udaneCieca, 4, 1, out);
+    fwrite( &endofLine, 4,1, out);
     fwrite( &data->line1, 4, 1, out);
+    fwrite( &endofLine, 4,1, out);
 
     fwrite( data->line2, 4, data->numLine2, out);
     fwrite( &endofLine, 4,1, out);
