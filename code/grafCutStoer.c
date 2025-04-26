@@ -97,13 +97,21 @@ static void freeWeightedNode(weightedNode* node){
 }
 
 #define MIN_WAIGHT_FOR_PIOQUE 2
-static long addToBlock(long* prioQue, long numPrioQue, weightedNode** graf, long* weights, long numGraf, long nodeToAddIndex){
+static void addToBlock(long* prioQue, long* pNumPrioQue, long* defultQue, long* pNumDefultQue, weightedNode** graf, long* weights, long numGraf, long nodeToAddIndex){
+    long numPrioQue = *pNumPrioQue;
+    long numDefultQue = *pNumDefultQue;
+    
     long remove = numPrioQue-1;
     for(;remove>=0 && prioQue[remove] != nodeToAddIndex; remove--);
     if(remove >= 0){
         numPrioQue--;
         prioQue[remove] = prioQue[numPrioQue];
     }
+
+    remove = numDefultQue-1;
+    for(;remove>=0 && defultQue[remove] != nodeToAddIndex; remove--);
+    numDefultQue--;
+    defultQue[remove] = defultQue[numDefultQue];
 
     weightedNode* nodeToAdd = graf[nodeToAddIndex];
 
@@ -116,6 +124,10 @@ static long addToBlock(long* prioQue, long numPrioQue, weightedNode** graf, long
         if(weights[indexOfCon] == -1){
             continue;
         }
+        if(weights[indexOfCon] == 0){
+            defultQue[numDefultQue] = indexOfCon;
+            numDefultQue++;
+        }
         alredyInPrioQue = (weights[indexOfCon] >= MIN_WAIGHT_FOR_PIOQUE);
         weights[indexOfCon] += nodeToAdd->weighted[i];
         if(!alredyInPrioQue && weights[indexOfCon] >= MIN_WAIGHT_FOR_PIOQUE){
@@ -124,7 +136,8 @@ static long addToBlock(long* prioQue, long numPrioQue, weightedNode** graf, long
         }
     }
 
-    return numPrioQue;
+    *pNumPrioQue = numPrioQue;
+    *pNumDefultQue = numDefultQue;
 }
 
 // index punktu
@@ -146,15 +159,16 @@ static long findNextNode(long* indexList,long numIndexList, weightedNode** graf,
 static long minimumCutPhase(weightedNode** graf, long numGraf){
     long weights[numGraf];
     long defultQue[numGraf]; // zawiera indexy do graf
+    long numDefultQue = 0;
     long prioQue[numGraf]; // gdzie waga wieksza niz 1;
-    long numPrioQue;
+    long numPrioQue = 0;
     for(long i=0; i<numGraf; i++){
-        defultQue[i] = i;
+        // defultQue[i] = i;
         weights[i] = 0;
     }
-    weights[0] = MIN_WAIGHT_FOR_PIOQUE  ;
-    prioQue[0] = 0;
-    numPrioQue = 1;
+    weights[0] = 1;
+    defultQue[0] = 0;
+    numDefultQue = 1;
 
     // for(long i =0; i<numGraf;i++){
     //     for(long j =0; j<graf[i]->nId;j++){
@@ -169,7 +183,11 @@ static long minimumCutPhase(weightedNode** graf, long numGraf){
     long nextNodeIndex;
     for(long i=1; i<numGraf; i++){
         // for(long i =0; i<numPrioQue;i++){
-        //     printf("%ld ", graf[prioQue[i]]->ids[0]);
+        //     printf("%ld ", prioQue[i]);
+        // }
+        // printf("\n");
+        // for(long i =0; i<numDefultQue;i++){
+        //     printf("%ld ", defultQue[i]);
         // }
         // printf("\n");
         // for(long i =0; i<numGraf;i++){
@@ -179,9 +197,9 @@ static long minimumCutPhase(weightedNode** graf, long numGraf){
         if(numPrioQue > 0){
             nextNodeIndex = findNextNode(prioQue, numPrioQue, graf, weights);
         }else{
-            nextNodeIndex = findNextNode(defultQue, numGraf ,graf, weights);
+            nextNodeIndex = findNextNode(defultQue, numDefultQue ,graf, weights);
         }
-        numPrioQue = addToBlock(prioQue, numPrioQue, graf, weights, numGraf, nextNodeIndex);
+        addToBlock(prioQue, &numPrioQue, defultQue, &numDefultQue, graf, weights, numGraf, nextNodeIndex);
     }
     // printf("\n");
     long retVal;
