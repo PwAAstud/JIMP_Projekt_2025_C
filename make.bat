@@ -1,2 +1,2 @@
 @echo off
-gcc -Wall .\code\*.c
+gcc .\code\*.c -o cutGraf
