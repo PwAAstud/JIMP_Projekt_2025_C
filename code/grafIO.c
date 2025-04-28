@@ -1,5 +1,5 @@
-#include"..\header\grafIO.h"
-#include"..\header\graf.h"
+#include"../header/grafIO.h"
+#include"../header/graf.h"
 #include"stdio.h"
 #include"stdlib.h"
 

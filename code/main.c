@@ -1,5 +1,5 @@
-#include"..\header\grafIO.h"
-#include"..\header\grafCutStoer.h"
+#include"../header/grafIO.h"
+#include"../header/grafCutStoer.h"
 #include<unistd.h>
 #include<stdio.h>
 #include<stdlib.h>

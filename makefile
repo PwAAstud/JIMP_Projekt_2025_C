@@ -1,2 +1,2 @@
 cutGraf:
-	cc .\code\* -o cutGraf
+	cc ./code/* -o cutGraf
