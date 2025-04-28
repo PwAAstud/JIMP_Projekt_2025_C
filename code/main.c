@@ -1,8 +1,5 @@
-#include"..\header\print.h"
 #include"..\header\grafIO.h"
-#include"..\header\grafCutComb.h"
 #include"..\header\grafCutStoer.h"
-#include"..\header\grafCutGrow.h"
 #include<unistd.h>
 #include<stdio.h>
 #include<stdlib.h>
