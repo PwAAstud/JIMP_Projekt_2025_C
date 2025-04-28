@@ -486,7 +486,6 @@ long cutGrafStoner(node** graf, long n, int margin, node*** out){
         long farderNode = minimumCutPhase(weightedGraf, nWeightedGraf);
         // printf("chosen: %ld\n", weightedGraf[farderNode]->ids[0]);
         // printf("size: %ld\n", weightedGraf[farderNode]->nId);
-        printf("%ld: %f ", nWeightedGraf,(float)(clock() - start) / CLOCKS_PER_SEC);
         
         if(weightedGraf[farderNode]->nId >= minSize && weightedGraf[farderNode]->nId <= maxSize){
             newCut = 0;
@@ -502,12 +501,12 @@ long cutGrafStoner(node** graf, long n, int margin, node*** out){
             }
         }
         // printf("%ld\n", farderNode);
-        start = clock();
         mergeWithGraf(weightedGraf, nWeightedGraf, farderNode, maxSize);
         nWeightedGraf--;
         // printf("\n");
         // printWeightedGraf(, nWeightedGraf);
-        printf("%f\r",(float)(clock() - start) / CLOCKS_PER_SEC);
+        printf("\r%ld: %f", nWeightedGraf,(float)(clock() - start) / CLOCKS_PER_SEC);
+        // printf("%f\r",(float)(clock() - start) / CLOCKS_PER_SEC);
     }
     qsort( bestCut.nodeIds, bestCut.n, sizeof(long), sortujRosnaco);
     
