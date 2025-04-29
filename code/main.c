@@ -11,26 +11,25 @@ int main(int argc, char *argv[]){
     char c;
     char* noOption[argc];
     int numNoOption = 0;
-    while (optind < argc){
-        if((c = getopt (argc, argv, "tbo:")) != -1){
-            switch (c){
-                case 'o':
-                    outName = optarg;
-                    break;
-                case 't':
-                    flagTermnal = 1;
-                    break;
-                case 'b':
-                    flagBinary = 1;
-                    break;
-                default:
-                    break;
-            }
-        }else{
-            noOption[numNoOption] = argv[optind];
-            numNoOption++;
-            optind++;
+    if((c = getopt (argc, argv, "tbo:")) != -1){
+        switch (c){
+            case 'o':
+                outName = optarg;
+                break;
+            case 't':
+                flagTermnal = 1;
+                break;
+            case 'b':
+                flagBinary = 1;
+                break;
+            default:
+                break;
         }
+    }
+    while(optind < argc){
+        noOption[numNoOption] = argv[optind];
+        numNoOption++;
+        optind++;
     }
     char* inName = (numNoOption >= 1) ? noOption[0] : NULL;
     if(!inName){
@@ -53,7 +52,6 @@ int main(int argc, char *argv[]){
     long numGrafsToCuts[cutNumber+1];
     grafsToCuts[0] = fileData->graf;
     numGrafsToCuts[0] = fileData->numGraf;
-    // sortGrafData(grafsToCuts[0], numGrafsToCuts[0]);
     // printf("%d\n", isGrafConected(grafsToCuts[0], numGrafsToCuts[0]));
 
     long cutGraf;
@@ -100,7 +98,6 @@ int main(int argc, char *argv[]){
             index++;
         }
     }
-    // sortGrafData(fileData->graf, fileData->numGraf);
     // printGraf(fileData->graf, fileData->numGraf);
     printf("%ld\n", sucesCut);
     if(!flagBinary){

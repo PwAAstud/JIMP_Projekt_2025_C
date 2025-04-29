@@ -80,8 +80,6 @@ weightedNode** grafToWeighted(node** graf, long n){
         long findIndex = 0;
         for(long j=0; j<graf[i]->n; j++){
             findIndex = grafBinSearch(graf, n, graf[i]->conetion[j]->id);
-            // for(; graf[i]->conetion[j]->id != graf[findIndex]->id; findIndex++);
-            // findIndex = (graf[0] - graf[i]->conetion[j])/sizeof(node*);
             retVal[i]->conetion[j] = retVal[findIndex];
             retVal[i]->weighted[j] = 1;
         }
@@ -163,23 +161,12 @@ static long minimumCutPhase(weightedNode** graf, long numGraf){
     long prioQue[numGraf]; // gdzie waga wieksza niz 1;
     long numPrioQue = 0;
     for(long i=0; i<numGraf; i++){
-        // defultQue[i] = i;
         weights[i] = 0;
     }
     weights[0] = 1;
     defultQue[0] = 0;
     numDefultQue = 1;
 
-    // for(long i =0; i<numGraf;i++){
-    //     for(long j =0; j<graf[i]->nId;j++){
-    //         printf("%ld ", graf[i]->ids[j]);
-    //     }
-    //     printf("; ");
-    // }
-    // printf("\n");
-
-    // // printf("%d\n", smalSise);
-    // numToCheck = addToBlock(&toCheck, &weighted, numToCheck, &bufferToCheck, &bufferWeighted, graf, visited, numGraf, graf[0]);
     long nextNodeIndex;
     for(long i=1; i<numGraf; i++){
         // for(long i =0; i<numPrioQue;i++){
@@ -336,11 +323,9 @@ static void mergeWithGraf(weightedNode** graf, long n, long nodeIndex, long maxS
     // printf("%p %p\n", mergeWith, deletNode);
     // pozbycie sie polaczenie miedzy mergeWith i deletNode
     i = binSherchPointers((void**)deletNode->conetion, deletNode->nCon, mergeWith);
-    // for(i=0; deletNode->conetion[i] != mergeWith; i++);
     removeConection(deletNode, i);
     // printf(">%p, %d\n",deletNode, mergeWith->nCon);
     i = binSherchPointers((void**)mergeWith->conetion, mergeWith->nCon, deletNode);
-    // for(i=0; mergeWith->conetion[i] != deletNode; i++);
     removeConection(mergeWith, i);
 
     // laczenie id
@@ -361,12 +346,10 @@ static void mergeWithGraf(weightedNode** graf, long n, long nodeIndex, long maxS
 
             // pozbycie polaczenia do deletnode z punktu wspulnie po jego stnie
             z = binSherchPointers((void**)mergeWith->conetion[j]->conetion, mergeWith->conetion[j]->nCon, deletNode);
-            // for(z=0; mergeWith->conetion[j]->conetion[z] != deletNode; z++);
             removeConection(mergeWith->conetion[j], z);
 
             // zaktualizowanie sily polacznie po drugiej stronie
             z = binSherchPointers((void**)mergeWith->conetion[j]->conetion, mergeWith->conetion[j]->nCon, mergeWith);
-            // for(z=0; mergeWith->conetion[j]->conetion[z] != mergeWith; z++);
             mergeWith->conetion[j]->weighted[z] = mergeWith->weighted[j];
 
             // pozbycie sie powturzenia
@@ -375,52 +358,9 @@ static void mergeWithGraf(weightedNode** graf, long n, long nodeIndex, long maxS
         }else{
             changeConWithOrderSaved(deletNode->conetion[i], deletNode, mergeWith);
         }
-
-        // long j;
-        // long z;
-        // isDuplicat = 0;
-        // sumowanie wag przy tych samych
-        // for(j=0; j<mergeWith->nCon; j++){
-        //     if(mergeWith->conetion[j] != deletNode->conetion[i]){
-        //         continue;
-        //     }
-        //     isDuplicat = 1;
-        //     mergeWith->weighted[j] += deletNode->weighted[i];
-
-        //     // pozbycie polaczenia do deletnode z punktu wspulnie po jego stnie
-        //     for(z=0; mergeWith->conetion[j]->conetion[z] != deletNode; z++);
-        //     removeConection(mergeWith->conetion[j], z);
-
-        //     // zaktualizowanie sily polacznie po drugiej stronie
-        //     for(z=0; mergeWith->conetion[j]->conetion[z] != mergeWith; z++);
-        //     mergeWith->conetion[j]->weighted[z] = mergeWith->weighted[j];
-
-        //     // pozbycie sie powturzenia
-        //     removeConection(deletNode, i);
-        //     i--;
-
-        //     break;
-        // }
-
-        // if(!isDuplicat){ // nieduplikat
-        //     for(z=0; deletNode->conetion[i]->conetion[z] != deletNode; z++);
-        //     deletNode->conetion[i]->conetion[z] = mergeWith;
-        //     // printf(" %d ", z>= deletNode->conetion[i]->nCon);
-        // }
     }
 
     margeConec(mergeWith, deletNode);
-
-    // mergeWith->conetion = realloc(mergeWith->conetion, (mergeWith->nCon+deletNode->nCon)* sizeof(weightedNode*));
-    // if(!mergeWith->conetion && 0!=(mergeWith->nCon+deletNode->nCon)){ fprintf(stderr, "[!] nie ma pamicei 5"); exit(7);}
-    // mergeWith->weighted = realloc(mergeWith->weighted, (mergeWith->nCon+deletNode->nCon)* sizeof(long));
-    // if(!mergeWith->weighted && 0!=(mergeWith->nCon+deletNode->nCon)){ fprintf(stderr, "[!] nie ma pamicei 6"); exit(8);}
-    // for(i=0; i<deletNode->nCon; i++){
-    //     mergeWith->conetion[mergeWith->nCon+i] = deletNode->conetion[i];
-    //     mergeWith->weighted[mergeWith->nCon+i] = deletNode->weighted[i];
-    // }
-    // mergeWith->nCon+=deletNode->nCon;
-    // printf("%ld \n", deletNode->nCon);
     
     freeWeightedNode(deletNode);
     for(i=nodeIndex+1; i<n; i++){
